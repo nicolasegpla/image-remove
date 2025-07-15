@@ -1,0 +1,57 @@
+# Entorno virtual de Python
+venv/
+.env
+*.env
+
+# Archivos de compilación
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+*.pid
+*.tar
+*.bak
+*.swp
+docker-compose.override.yml
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+*.old
+*.orig
+
+# Unit test / coverage
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# mypy / pylint / pyright
+.mypy_cache/
+.pyright/
+.pylint.d/
+
+# FastAPI static/docs cache
+openapi.json
