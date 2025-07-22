@@ -1,6 +1,6 @@
 import httpx
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageFilter
 from fastapi import HTTPException, UploadFile
 import os
 from rembg import remove
@@ -12,7 +12,7 @@ from typing import cast
 timeout = httpx.Timeout(30.0)  # 30 segundos
 
 
-async def process_image(file: UploadFile) -> bytes:
+async def process_image(file: UploadFile, enhance: bool = True) -> bytes:
     # Leer imagen original como bytes
     image_bytes = await file.read()
 
@@ -28,6 +28,15 @@ async def process_image(file: UploadFile) -> bytes:
 
     # 4. Convertir a escala de grises
     grayscale = combined.convert("L").convert("RGBA")
+
+    # 🔍 6. Mejora de calidad (opcional)
+    if enhance:
+        # Escalar al 2x usando LANCZOS (calidad)
+        new_size = (grayscale.width * 2, grayscale.height * 2)
+        grayscale = grayscale.resize(new_size, resample=Image.LANCZOS)
+
+        # Aplicar filtro de nitidez
+        grayscale = grayscale.filter(ImageFilter.SHARPEN)
     
     # 5. Guardar en memoria
     output = BytesIO()

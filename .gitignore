@@ -2,6 +2,7 @@
 venv/
 .env
 *.env
+.venv/
 
 # Archivos de compilación
 __pycache__/
