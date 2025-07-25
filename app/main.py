@@ -3,6 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.services.image_service import process_image
 from fastapi import Request
 
+from fastapi.middleware.cors import CORSMiddleware
+from app.core.rate_limit import limiter  # ✅ importar desde el nuevo archivo
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi import _rate_limit_exceeded_handler
+
 app = FastAPI()
 
 # 👇 Agrega esto para permitir CORS (acceso desde el frontend)
@@ -14,14 +20,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Configurar SlowAPI middleware y handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
+
 @app.get("/test")
+@limiter.limit("5/minute") # ✅ Aplicar límite de 5 requests por minuto
 async def test(request: Request):
     print("Origin: ", request.headers.get("origin"))
     print("IP: ", request.client.host if request.client else "No client")
     return {"message": "Hello World"}
 
 @app.post("/transform")
-async def transform_image(file: UploadFile = File(...)):
+@limiter.limit("5/minute") # ✅ Aplicar límite de 5 requests por minuto
+async def transform_image(request: Request, file: UploadFile = File(...)):
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Solo se permiten imágenes.")
     result = await process_image(file)
