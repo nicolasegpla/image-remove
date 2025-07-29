@@ -1,3 +1,6 @@
+import os
+os.environ["U2NET_HOME"] = "/app/.u2net"
+
 from fastapi import FastAPI, File, UploadFile, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.image_service import process_image

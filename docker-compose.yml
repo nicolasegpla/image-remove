@@ -10,4 +10,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+      - /home/ubuntu/.u2net:/app/.u2net  # ⬅️ Mapeamos el modelo al contenedor
+    environment:
+      - U2NET_HOME=/app/.u2net           # ⬅️ Indicamos la ruta del modelo a rembg
     restart: unless-stopped
