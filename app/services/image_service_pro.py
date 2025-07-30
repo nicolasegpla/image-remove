@@ -6,7 +6,7 @@ from rembg import remove, new_session
 from typing import cast
 
 # Crear la sesión con el modelo más preciso
-session = new_session(model_name="u2net_human_seg")
+session = new_session(model_name="isnet-general-use")
 timeout = httpx.Timeout(30.0)
 
 MAX_SIZE = 2048
