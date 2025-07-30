@@ -1,28 +1,38 @@
-# Usamos una imagen base ligera con Python
+# Imagen base ligera con Python 3.10
 FROM python:3.10-slim
 
-# Evita prompts interactivos en la instalación
+# Evita prompts durante apt-get
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Creamos y usamos un directorio de trabajo
+# Directorio de trabajo
 WORKDIR /app
 
-# Copiamos requirements y los instalamos
+# Copia requirements y los instala
 COPY requirements.txt .
 
-# Instalación del sistema y dependencias necesarias
+# Instala dependencias del sistema
 RUN apt-get update && \
-    apt-get install -y libgl1 libglib2.0-0 && \
-    pip install --no-cache-dir -r requirements.txt
+    apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
+        wget \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copiamos el resto del proyecto
+# Instala dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia el código fuente
 COPY . .
+
+# Descarga previa del modelo isnet-general-use para evitar descarga en caliente (opcional)
+RUN mkdir -p /root/.u2net
+   # wget -O /root/.u2net/isnet-general-use.onnx \
+   #https://huggingface.co/DaDetIsnet/real-isnet/resolve/main/isnet-general-use.onnx
 
 # Exponer el puerto por defecto de uvicorn
 EXPOSE 8000
 
-# Comando para ejecutar FastAPI con autoreload desactivado (modo producción)
+# Comando por defecto (puedes ajustar si usas gunicorn/uvicorn con workers)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
-#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
