@@ -56,3 +56,5 @@ coverage.xml
 
 # FastAPI static/docs cache
 openapi.json
+.u2net/
+

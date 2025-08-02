@@ -6,7 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.services.image_service import process_image
 from app.services.image_service_sem import process_image_sem
 from app.services.image_service_pro import process_image_pro
+from app.services.image_service_external_pro import process_image_external_pro
 from fastapi import Request
+import asyncio
 
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.rate_limit import limiter  # ✅ importar desde el nuevo archivo
@@ -120,3 +122,27 @@ async def transform_image_pro(request: Request, file: UploadFile = File(...)):
         }
     )
 
+
+
+
+
+@app.post("/transform_external_pro")
+@limiter.limit("5/minute")
+async def transform_image_external_pro(request: Request, file: UploadFile = File(...)):
+    print("📥 Recibido archivo:", file.filename)
+    print("📂 Content-Type:", file.content_type)
+
+    try:
+        # Llamar función síncrona correctamente en un hilo
+        result_bytes = await asyncio.to_thread(process_image_external_pro, file)
+    except Exception as e:
+        print("❌ Error en process_image_external_pro:", str(e))
+        raise HTTPException(status_code=500, detail="Error interno del servidor en process_image_external_pro.")
+    
+    return Response(
+        content=result_bytes,
+        media_type="image/png",
+        headers={
+            "Content-Disposition": "inline; filename=processed.png",
+        }
+    )
