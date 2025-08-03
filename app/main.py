@@ -9,6 +9,7 @@ from app.services.image_service_pro import process_image_pro
 from app.services.image_service_external_pro import process_image_external_pro
 from fastapi import Request
 import asyncio
+from app.routes import auth
 
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.rate_limit import limiter  # ✅ importar desde el nuevo archivo
@@ -146,3 +147,5 @@ async def transform_image_external_pro(request: Request, file: UploadFile = File
             "Content-Disposition": "inline; filename=processed.png",
         }
     )
+
+app.include_router(auth.router)
