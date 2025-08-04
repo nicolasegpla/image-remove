@@ -6,6 +6,8 @@ from app.database.sesssion import get_db
 from app.utils.security import get_password_hash, verify_password, create_access_token
 import uuid
 from app.core.config import settings
+from uuid import UUID
+from app.schemas.user_schema import UserUpdate
 
 router = APIRouter(
     prefix="/auth",
@@ -52,3 +54,21 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         "type_user": db_user.type_user,
         "country": db_user.country,
     }}
+
+# app/routes/auth.py (mismo archivo)
+
+
+
+@router.put("/user/{user_id}", response_model=UserResponse)
+def update_user(user_id: UUID, user_data: UserUpdate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Actualizamos solo los campos que vienen en el payload
+    for field, value in user_data.dict(exclude_unset=True).items():
+        setattr(user, field, value)
+
+    db.commit()
+    db.refresh(user)
+    return user

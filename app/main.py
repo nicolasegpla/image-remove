@@ -1,7 +1,10 @@
 import os
 os.environ["U2NET_HOME"] = "/app/.u2net"
 
-from fastapi import FastAPI, File, UploadFile, Response, HTTPException
+from fastapi import FastAPI, File, UploadFile, Response, HTTPException, Depends
+from sqlalchemy.orm import Session
+from app.database.sesssion import get_db
+from app.models.user import User
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.image_service import process_image
 from app.services.image_service_sem import process_image_sem
@@ -16,13 +19,16 @@ from app.core.rate_limit import limiter  # ✅ importar desde el nuevo archivo
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi import _rate_limit_exceeded_handler
+from app.dependencies.auth import get_current_user
+
+
 
 app = FastAPI()
 
 # 👇 Agrega esto para permitir CORS (acceso desde el frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # o ["*"] si estás en desarrollo
+    allow_origins=["*", "http://localhost:5173"],  # o ["*"] si estás en desarrollo
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -129,13 +135,23 @@ async def transform_image_pro(request: Request, file: UploadFile = File(...)):
 
 @app.post("/transform_external_pro")
 @limiter.limit("5/minute")
-async def transform_image_external_pro(request: Request, file: UploadFile = File(...)):
+async def transform_image_external_pro(request: Request, file: UploadFile = File(...), current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)):
     print("📥 Recibido archivo:", file.filename)
     print("📂 Content-Type:", file.content_type)
+
+    # ✅ Verificar si tiene tokens
+    if current_user.tokens <= 0:
+        print(current_user.tokens)
+        raise HTTPException(status_code=403, detail="Insufficient tokens to use this endpoint.")
 
     try:
         # Llamar función síncrona correctamente en un hilo
         result_bytes = await asyncio.to_thread(process_image_external_pro, file)
+        # ✅ Descontar 1 token al usuario
+        current_user.tokens -= 1
+        db.commit()
+        db.refresh(current_user)
     except Exception as e:
         print("❌ Error en process_image_external_pro:", str(e))
         raise HTTPException(status_code=500, detail="Error interno del servidor en process_image_external_pro.")

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from pydantic import ConfigDict
 from uuid import UUID
+from typing import Optional
 
 
 class UserCreate(BaseModel):
@@ -23,3 +24,11 @@ class UserResponse(BaseModel):
     country: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    country: Optional[str] = None
+    status: Optional[bool] = None
+    tokens: Optional[int] = None
+    type_user: Optional[str] = None
+    code_auth: Optional[str] = None
