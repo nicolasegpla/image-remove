@@ -8,6 +8,7 @@ import uuid
 from app.core.config import settings
 from uuid import UUID
 from app.schemas.user_schema import UserUpdate
+from app.services.user import get_user_tokens
 
 router = APIRouter(
     prefix="/auth",
@@ -72,3 +73,11 @@ def update_user(user_id: UUID, user_data: UserUpdate, db: Session = Depends(get_
     db.commit()
     db.refresh(user)
     return user
+
+@router.get("/users/{user_id}/tokens", response_model=int)
+def get_user_tokens_endpoint(user_id: UUID, db: Session = Depends(get_db)):
+    try:
+        tokens = get_user_tokens(user_id, db)
+        return tokens
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

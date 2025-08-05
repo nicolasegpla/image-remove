@@ -1,9 +1,11 @@
+from sqlalchemy import UUID
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.schemas.user_schema import UserCreate
 from passlib.context import CryptContext
 import uuid
 from datetime import datetime
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -37,3 +39,9 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
     if not user or not verify_password(password, user.password):
         return None
     return user
+
+def get_user_tokens(user_id: UUID, db: Session) -> int:
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise ValueError("User not found")
+    return user.tokens
