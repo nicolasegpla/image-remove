@@ -14,6 +14,7 @@ def get_current_user(
 ) -> User:
     try:
         payload = decode_access_token(token)
+        print("Decoded token payload:", payload)  # Debugging line
         email: str = payload.get("sub")
         if not email:
             raise HTTPException(status_code=401, detail="Invalid token payload")
