@@ -20,6 +20,9 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from app.dependencies.auth import get_current_user
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 
