@@ -9,7 +9,7 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 print("🔑 DB_PASSWORD desde entorno:", DB_PASSWORD)
 
 # Reemplaza los valores con los reales si no estás usando variables de entorno
-DATABASE_URL = f"postgresql://image_user:{DB_PASSWORD}@34.203.200.175:5432/image_processor"
+DATABASE_URL = f"postgresql://image_user:{DB_PASSWORD}@13.220.90.245:5432/image_processor"
 
 engine = create_engine(DATABASE_URL)
 
